@@ -20,6 +20,6 @@ app.post("/api/conversations", (req,res)=>{
 
 })
 
-app.listen(1338, () => {
+app.listen(3000, () => {
   console.log("listening on port 1338");
 });

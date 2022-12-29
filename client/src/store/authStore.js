@@ -1,26 +1,25 @@
 import { atom, selector } from "recoil";
+import { AxiosInstance } from "../axios/axios";
 
-const AuthInfoState = atom({
-    key: "auth_authInfoState",
-    default: {
-        userInfo: {},
-        isAuthenticated: false
+export const AuthInfoState = atom({
+  key: "auth_authInfoState",
+  default: {
+    userInfo: {},
+    isAuthenticated: false,
+  },
+  effects: [
+    async ({ setSelf, resetSelf }) => {
+      try {
+        const res = await AxiosInstance.get("/user-info");
+        setSelf({
+          userInfo: res.data.userInfo,
+          isAuthenticated: true,
+        });
+      } catch (error) {
+        //display error
+        // console.error(error);
+        resetSelf();
+      }
     },
-    effects: [
-        async ({ setSelf, resetSelf }) => {
-            try {
-                const res = await fetch("/user-info");
-                const data = await res.json();
-                setSelf({
-                    userInfo: data.userInfo,
-                    isAuthenticated: true
-                });
-            }
-            catch (error) {
-                //display error
-                console.error(error);
-                resetSelf();
-            }
-        }
-    ]
-})
+  ],
+});
