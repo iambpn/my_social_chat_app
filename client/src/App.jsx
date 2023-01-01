@@ -4,7 +4,7 @@ import "./App.css";
 import Login from "./pages/login.jsx";
 import Register from "./pages/register.jsx";
 import ErrorPage from "./pages/error.jsx";
-import { Authenticate } from "./helper/Authenticate";
+import { ProtectedRoute } from "./helper/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -14,15 +14,19 @@ const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <Login />,
+    element: (
+      <ProtectedRoute isAuthenticated={false}>
+        <Login />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorPage />,
   },
   {
     path: "/register",
     element: (
-      <Authenticate>
+      <ProtectedRoute isAuthenticated={false}>
         <Register />
-      </Authenticate>
+      </ProtectedRoute>
     ),
     errorElement: <ErrorPage />,
   },

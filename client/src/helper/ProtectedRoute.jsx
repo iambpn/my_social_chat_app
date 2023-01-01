@@ -3,15 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { AuthInfoState } from "../store/authStore";
 
-export function Authenticate({ children, ...rest }) {
+export function ProtectedRoute({ children, isAuthenticated = true, ...rest }) {
   const authInfo = useRecoilValue(AuthInfoState);
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    if(!authInfo.isAuthenticated){
-      navigate("/login")
+  useEffect(() => {
+    if ((isAuthenticated && !authInfo.isAuthenticated) || (!isAuthenticated && authInfo.isAuthenticated)) {
+      navigate("/login");
     }
-  },[])
+  }, []);
 
-  return <>{children}</>
+  return <>{children}</>;
 }

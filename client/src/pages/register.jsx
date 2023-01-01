@@ -1,3 +1,10 @@
-export default function Register (){
-    return <div> Register page</div>
+import RegisterForm from "../components/RegisterForm";
+import LoggedOutLayout from "../layout/LoggedOutLayout";
+
+export default function Register() {
+  return (
+    <LoggedOutLayout>
+      <RegisterForm />
+    </LoggedOutLayout>
+  );
 }
