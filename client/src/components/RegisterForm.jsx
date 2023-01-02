@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AxiosInstance } from "../axios/axios";
+import ErrorText from "../helper/ErrorText";
 
 export default function RegisterForm() {
   const [email, setEmail] = useState("");
@@ -33,12 +34,10 @@ export default function RegisterForm() {
     }
   };
 
-  const errorHtml = <p className='text-red-600 text-center text-sm'>{error}</p>;
-
   return (
     <>
       <div className='bg-white px-4 py-4 w-[75%] rounded'>
-        {error && errorHtml}
+        {error && <ErrorText error={error} />}
         <form className='pt-3' onSubmit={handleSubmit}>
           <input
             type='username'

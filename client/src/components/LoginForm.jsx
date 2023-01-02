@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
 import { AxiosInstance } from "../axios/axios";
+import ErrorText from "../helper/ErrorText";
 import { AuthInfoState } from "../store/authStore";
 
 export default function LoginForm() {
@@ -31,26 +32,24 @@ export default function LoginForm() {
     }
   };
 
-  const errorHtml = <p className='text-red-600 text-center text-sm'>{error}</p>;
-
   return (
     <>
       <div className='bg-white px-4 py-5 w-[75%] rounded'>
-        {error && errorHtml}
+        {error && <ErrorText error={error} />}
         <form className='border-b border-gray-400 py-3' onSubmit={handleSubmit}>
           <input
             type='email'
             className='form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none mt-3'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
+            placeholder='Email'
           />
           <input
             type='password'
             className='form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none mt-3'
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
+            placeholder='Password'
           />
           <input
             type='submit'

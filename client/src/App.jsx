@@ -5,6 +5,7 @@ import Login from "./pages/login.jsx";
 import Register from "./pages/register.jsx";
 import ErrorPage from "./pages/error.jsx";
 import { ProtectedRoute } from "./helper/ProtectedRoute";
+import Conversation from "./pages/conversation";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,15 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute isAuthenticated={false}>
         <Register />
+      </ProtectedRoute>
+    ),
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/conversation",
+    element: (
+      <ProtectedRoute isAuthenticated={false}>
+        <Conversation />
       </ProtectedRoute>
     ),
     errorElement: <ErrorPage />,
