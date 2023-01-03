@@ -47,13 +47,13 @@
 #batch-icon::before {
   content: "";
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
   background-color: red;
   border-radius: 50%;
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -6px;
+  right: -6px;
 }
 
 #batch-icon::after {
@@ -61,7 +61,7 @@
   display: inline-block;
   position: absolute;
   top: -7px;
-  right: -1px;
+  right: -2px;
   font-size: 10px;
   color: white;
 }
