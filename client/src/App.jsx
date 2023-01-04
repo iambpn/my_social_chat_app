@@ -6,11 +6,12 @@ import Register from "./pages/register.jsx";
 import ErrorPage from "./pages/error.jsx";
 import { ProtectedRoute } from "./helper/ProtectedRoute";
 import Conversation from "./pages/conversation";
+import { Navigate } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <div>home</div>,
+    element: <Navigate to={"/register"} replace={true} />,
     errorElement: <ErrorPage />,
   },
   {
@@ -34,7 +35,7 @@ const router = createBrowserRouter([
   {
     path: "/conversation",
     element: (
-      <ProtectedRoute isAuthenticated={false}>
+      <ProtectedRoute isAuthenticated={true}>
         <Conversation />
       </ProtectedRoute>
     ),
