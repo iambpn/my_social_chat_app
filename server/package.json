@@ -4,8 +4,13 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "bcrypt": "^5.1.0",
+    "dotenv": "^16.0.3",
     "express": "^4.17.2",
-    "mongoose": "^6.2.0"
+    "mongoose": "^6.2.0",
+    "nodemon": "^2.0.20",
+    "zod": "^3.20.2",
+    "zod-validation-error": "^0.3.0"
   },
   "scripts": {
     "start": "nodemon index.js"
