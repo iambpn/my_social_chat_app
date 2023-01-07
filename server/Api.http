@@ -17,3 +17,15 @@ Content-Type: application/json
   "email": "admin@admin.com",
   "password": "bipin123"
 }
+
+### Logout Api
+GET http://localhost:3000/api/auth/logout HTTP/1.1
+
+### Get UserInfo
+GET http://localhost:3000/api/user HTTP/1.1
+
+### Get Messages
+GET http://localhost:3000/api/messages/id HTTP/1.1
+
+### Get Conversation
+GET http://localhost:3000/api/conversations HTTP/1.1
