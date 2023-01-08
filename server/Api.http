@@ -21,11 +21,53 @@ Content-Type: application/json
 ### Logout Api
 GET http://localhost:3000/api/auth/logout HTTP/1.1
 
+### registre post api (User2)
+POST http://localhost:3000/api/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "user2",
+  "email": "user2@admin.com",
+  "password": "bipin123",
+  "re_password": "bipin123"
+}
+
+### Login Api (User2)
+POST  http://localhost:3000/api/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "user2@admin.com",
+  "password": "bipin123"
+}
+
 ### Get UserInfo
 GET http://localhost:3000/api/user HTTP/1.1
 
-### Get Messages
-GET http://localhost:3000/api/messages/id HTTP/1.1
-
-### Get Conversation
+### Get Conversations
 GET http://localhost:3000/api/conversations HTTP/1.1
+
+### Create Conversation
+POST http://localhost:3000/api/conversation HTTP/1.1
+Content-Type: application/json
+
+{
+  "users":[
+    "63b6f37fa849abbaba93c368",
+    "63bac2da947efb428549108c"
+  ]
+}
+
+### Get Messages
+GET http://localhost:3000/api/messages/63bac4781d197b3833adebb7 HTTP/1.1
+
+### Send Message
+POST http://localhost:3000/api/message/63bac4781d197b3833adebb7 HTTP/1.1
+Content-Type: application/json
+
+{
+  "message": "Hello world"
+}
+
+### Server Sent Event Message
+GET http://localhost:3000/api/notify/messages/63bac4781d197b3833adebb7 HTTP/1.1

@@ -8,14 +8,24 @@ const { ZodError } = require("zod");
 const { registerBodySchema } = require("./validation_schema/register.schema");
 const { formatZodError } = require("./helper/formatZodError");
 const { loginSchema } = require("./validation_schema/login.schema");
-const { MessageParamsSchema, MessageQuerySchema } = require("./validation_schema/messages.schema");
-const { ConversationQuerySchema } = require("./validation_schema/conversation.schema");
+const { MessageParamsSchema, MessageQuerySchema, SendMessageSchema } = require("./validation_schema/messages.schema");
+const { ConversationQuerySchema, CreateConversationSchema } = require("./validation_schema/conversation.schema");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-const { RequireAuth } = require("./helper/RequireAuth.middleware");
-const { json } = require("express");
+const { RequireAuth, BlockAuth } = require("./helper/Auth.middleware");
+const cors = require("cors");
+const helmet = require("helmet");
+
+const responseMapper = new Map();
 
 const app = express();
+app.use(
+  cors({
+    origin: ["http://localhost:8080"],
+    credentials: true,
+  })
+);
+app.use(helmet());
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -38,7 +48,7 @@ mongoose.connect(process.env.MONGO_URL);
 
 app.use(express.json());
 
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", BlockAuth, async (req, res) => {
   try {
     const { email, password } = loginSchema.parse(req.body);
     const user = await UserModel.findOne({ email: email });
@@ -84,7 +94,7 @@ app.get("/api/auth/logout", async (req, res) => {
   });
 });
 
-app.post("/api/auth/register", async (req, res) => {
+app.post("/api/auth/register", BlockAuth, async (req, res) => {
   try {
     const { username, email, password, re_password } = registerBodySchema.parse(req.body);
 
@@ -135,7 +145,9 @@ app.get("/api/messages/:conversation_id", RequireAuth, async (req, res) => {
     })
       .limit(query.take ?? 20)
       .skip((query.page ?? 1) * query.take ?? 20)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .populate("conversationId")
+      .populate("sender", { password: 0 });
 
     return res.status(200).json({
       data: messages,
@@ -156,12 +168,14 @@ app.get("/api/messages/:conversation_id", RequireAuth, async (req, res) => {
 app.get("/api/conversations", RequireAuth, async (req, res) => {
   try {
     const query = ConversationQuerySchema.parse(req.query);
+
     const conversations = await ConversationModel.find({
-      members: { $in: [req.session.user.id] },
+      members: { $in: [req.session.user._id] },
     })
       .limit(query.take ?? 5)
       .skip((query.page ?? 1) * query.take ?? 5)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .populate("members", { password: 0 });
 
     return res.status(200).json({
       data: conversations,
@@ -175,6 +189,141 @@ app.get("/api/conversations", RequireAuth, async (req, res) => {
 
     return res.status(400).json({
       messages: messages,
+    });
+  }
+});
+
+app.post("/api/conversation", RequireAuth, async (req, res) => {
+  try {
+    const { users } = CreateConversationSchema.parse(req.body);
+
+    await Promise.all(
+      users.map(async (user_id) => {
+        const user = await UserModel.findOne({
+          _id: new mongoose.Types.ObjectId(user_id),
+        });
+
+        if (!user) {
+          throw new Error("User Not found");
+        }
+        return user;
+      })
+    );
+
+    const conversation = new ConversationModel({
+      members: users,
+    });
+    await conversation.save();
+
+    return res.status(201).json({
+      message: "Created",
+      message: "Created",
+    });
+  } catch (error) {
+    console.log(error);
+
+    let messages = [error.message];
+    if (error instanceof ZodError) {
+      messages = formatZodError(error);
+    }
+    return res.status(400).json({
+      messages,
+    });
+  }
+});
+
+app.get("/api/notify/messages/:conversation_id", RequireAuth, async (req, res) => {
+  try {
+    const { conversation_id } = MessageParamsSchema.parse(req.params);
+
+    const conversation = await ConversationModel.findOne({
+      _id: conversation_id,
+    });
+
+    if (!conversation) {
+      throw new Error("Conversation not found.");
+    }
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+
+    // client side connection close
+    res.on("close", () => {
+      res.end();
+      console.log("Connection closed by client");
+    });
+
+    const message = await MessageModel.findOne({ conversationId: conversation_id }).sort({ createdAt: -1 });
+
+    const res_key = `${conversation_id}_${req.session.user._id}`;
+    let savedResponse = responseMapper.get(res_key);
+    if (!savedResponse) {
+      responseMapper.set(res_key, res);
+      savedResponse = responseMapper.get(res_key);
+    }
+
+    savedResponse.write("event: initialMessage\n");
+    savedResponse.write(`data: ${message ? JSON.stringify(message) : "null"}\n\n`);
+  } catch (error) {
+    console.log(error);
+
+    res.removeHeader("Content-Type");
+    res.removeHeader("Connection");
+
+    let messages = [error.message];
+    if (error instanceof ZodError) {
+      messages = formatZodError(error);
+    }
+    return res.status(400).json({
+      messages,
+    });
+  }
+});
+
+app.post("/api/message/:conversation_id", RequireAuth, async (req, res) => {
+  try {
+    const { conversation_id } = MessageParamsSchema.parse(req.params);
+    const body = SendMessageSchema.parse(req.body);
+
+    const conversation = await ConversationModel.findOne({
+      _id: conversation_id,
+    });
+
+    if (!conversation) {
+      return res.status(400).json({
+        message: "Conversation id not found",
+      });
+    }
+
+    const message = new MessageModel({
+      conversationId: conversation_id,
+      sender: req.session.user._id,
+      text: body.message,
+    });
+    await message.save();
+
+    // notify users of conversation_id
+    conversation.members.forEach((user_id) => {
+      const savedResponse = responseMapper.get(`${conversation_id}_${user_id}`);
+      if (savedResponse) {
+        savedResponse.write("event: newMessage\n");
+        savedResponse.write(`data: ${JSON.stringify(message)}\n\n`);
+      }
+    });
+
+    return res.status(200).json({
+      message: "message sent",
+    });
+  } catch (error) {
+    console.log(error);
+
+    let messages = [error.message];
+    if (error instanceof ZodError) {
+      messages = formatZodError(error);
+    }
+    return res.status(400).json({
+      messages,
     });
   }
 });

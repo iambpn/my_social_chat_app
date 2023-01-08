@@ -7,7 +7,12 @@ const MessageParamsSchema = z.object({
 
 const MessageQuerySchema = z.object({});
 
+const SendMessageSchema = z.object({
+  message: z.string().min(2),
+});
+
 module.exports = {
   MessageParamsSchema,
   MessageQuerySchema: MessageQuerySchema.merge(paginationSchema.partial()),
+  SendMessageSchema,
 };
