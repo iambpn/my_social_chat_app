@@ -1,10 +1,35 @@
-import { useRecoilValue } from "recoil";
-import { AuthInfoState } from "../store/authStore";
+import { useState } from "react";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { AxiosInstance } from "../axios/axiosInstance";
+import ErrorText from "../helper/ErrorText";
+import { ConversationsState, MessagesState } from "../store/conversationStore";
 
 export default function ConversationPanel() {
+  const conversations = useRecoilValue(ConversationsState);
+  const setMessagesState = useSetRecoilState(MessagesState);
+  const [error, setError] = useState("");
+
+  const handleOpenConversation = async (e, conversation_id) => {
+    try {
+      const res = await AxiosInstance.get(`/api/messages/${conversation_id}`);
+      setMessagesState({
+        conversation_id: conversation_id,
+        messages: res.data.data.reverse(),
+      });
+    } catch (err) {
+      console.log(err.toString());
+      if (err?.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError(err.message);
+      }
+    }
+  };
+
   return (
     <>
       <div>
+        {error && <ErrorText error={error} />}
         <div>
           <input
             type='text'
@@ -13,12 +38,14 @@ export default function ConversationPanel() {
           />
         </div>
         <div className='flex flex-col'>
-          <div className='flex justify-around w-full items-center py-3'>
-            <span>
-              <img src='https://mdbcdn.b-cdn.net/img/Photos/Horizontal/Nature/4-col/img%20(73).webp' alt='profile image' className='h-[40px] w-[40px] rounded-full' loading='eager' />
-            </span>
-            <span className='capitalize'>{"api name"}</span>
-          </div>
+          {conversations.map((conversation) => (
+            <div className='flex justify-around w-full items-center py-3 hover:bg-gray-300' key={conversation._id} onClick={(e) => handleOpenConversation(e, conversation._id)}>
+              <span>
+                <img src='https://random.imagecdn.app/100/100' alt='profile image' className='h-[40px] w-[40px] rounded-full border border-gray-400' />
+              </span>
+              <span className='capitalize'>{conversation.members.map((member) => member.username).join(", ")}</span>
+            </div>
+          ))}
         </div>
       </div>
     </>

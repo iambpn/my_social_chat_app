@@ -1,5 +1,5 @@
 import { atom, selector } from "recoil";
-import { AxiosInstance } from "../axios/axios";
+import { AxiosInstance } from "../axios/axiosInstance";
 
 export const AuthInfoState = atom({
   key: "auth_authInfoState",
@@ -10,9 +10,9 @@ export const AuthInfoState = atom({
   effects: [
     async ({ setSelf, resetSelf }) => {
       try {
-        const res = await AxiosInstance.get("/user-info");
+        const res = await AxiosInstance.get("api/user");
         setSelf({
-          userInfo: res.data.userInfo,
+          userInfo: res.data.data,
           isAuthenticated: true,
         });
       } catch (error) {

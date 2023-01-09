@@ -7,7 +7,7 @@ export default function ConversationOnline() {
         <div className='flex justify-around w-full items-center pb-2 pt-2'>
           <div className='flex justify-start items-center'>
             <span>
-              <img src='https://mdbcdn.b-cdn.net/img/Photos/Horizontal/Nature/4-col/img%20(73).webp' alt='profile image' className='h-[30px] w-[30px] rounded-full mr-4' loading='eager' />
+              <img src='https://random.imagecdn.app/100/100' alt='profile image' className='h-[30px] w-[30px] rounded-full mr-4 border border-gray-400' />
             </span>
             <span className='capitalize'>{"api name"}</span>
           </div>

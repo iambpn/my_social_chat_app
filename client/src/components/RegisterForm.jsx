@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AxiosInstance } from "../axios/axios";
+import { AxiosInstance } from "../axios/axiosInstance";
 import ErrorText from "../helper/ErrorText";
 
 export default function RegisterForm() {
@@ -18,7 +18,7 @@ export default function RegisterForm() {
         throw new Error("Password did not matched.");
       }
 
-      await AxiosInstance.post("/register", {
+      await AxiosInstance.post("/api/auth/register", {
         email,
         username,
         password,

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
-import { AxiosInstance } from "../axios/axios";
+import { AxiosInstance } from "../axios/axiosInstance";
 import ErrorText from "../helper/ErrorText";
 import { AuthInfoState } from "../store/authStore";
 
@@ -10,18 +10,20 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const setAuthInfo = useSetRecoilState(AuthInfoState);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await AxiosInstance.post("/login", {
+      const res = await AxiosInstance.post("/api/auth/login", {
         email,
         password,
       });
       setAuthInfo({
         isAuthenticated: true,
-        userInfo: res.data,
+        userInfo: res.data.userInfo,
       });
+      navigate("/conversation");
     } catch (err) {
       console.log(err.toString());
       if (err?.response?.data?.message) {
