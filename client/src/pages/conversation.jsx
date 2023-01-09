@@ -1,9 +1,35 @@
+import { useEffect } from "react";
 import ConversationOnline from "../components/ConversationOnline";
 import ConversationPanel from "../components/ConversationPanel";
 import ConversationWindow from "../components/ConversationWindow";
 import Navbar from "../components/Navbar";
 
 export default function Conversation() {
+  useEffect(() => {
+    const event = new EventSource(`${import.meta.env.VITE_API_URL}/api/notify/messages`, {
+      withCredentials: true,
+    });
+
+    event.addEventListener("statusCheck", (event) => {
+      // event named `eventData` will be received here
+      console.log("initialMessage:", event);
+    });
+
+    event.addEventListener("newMessage", (event) => {
+      // event named `eventData` will be received here
+      console.log("neMessage:", event);
+    });
+
+    event.addEventListener("error", (error) => {
+      console.log("Error:", error);
+      console.log("SSE closed due to error.");
+      event.close();
+    });
+
+    return () => {
+      event.close();
+    };
+  });
   return (
     <>
       <Navbar />

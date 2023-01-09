@@ -232,39 +232,28 @@ app.post("/api/conversation", RequireAuth, async (req, res) => {
   }
 });
 
-app.get("/api/notify/messages/:conversation_id", RequireAuth, async (req, res) => {
+app.get("/api/notify/messages", RequireAuth, async (req, res) => {
   try {
-    const { conversation_id } = MessageParamsSchema.parse(req.params);
-
-    const conversation = await ConversationModel.findOne({
-      _id: conversation_id,
-    });
-
-    if (!conversation) {
-      throw new Error("Conversation not found.");
-    }
-
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders();
 
     // client side connection close
     res.on("close", () => {
-      res.end();
+      responseMapper.delete(req.session.user._id);
       console.log("Connection closed by client");
+      res.end();
     });
 
-    const message = await MessageModel.findOne({ conversationId: conversation_id }).sort({ createdAt: -1 });
-
-    const res_key = `${conversation_id}_${req.session.user._id}`;
+    const res_key = `${req.session.user._id}`;
     let savedResponse = responseMapper.get(res_key);
     if (!savedResponse) {
       responseMapper.set(res_key, res);
       savedResponse = responseMapper.get(res_key);
     }
 
-    savedResponse.write("event: initialMessage\n");
-    savedResponse.write(`data: ${message ? JSON.stringify(message) : "null"}\n\n`);
+    savedResponse.write("event: statusCheck\n");
+    savedResponse.write(`data: ${JSON.stringify({ status: "success" })}\n\n`);
   } catch (error) {
     console.log(error);
 
@@ -296,19 +285,19 @@ app.post("/api/message/:conversation_id", RequireAuth, async (req, res) => {
       });
     }
 
-    const message = new MessageModel({
+    let message = new MessageModel({
       conversationId: conversation_id,
       sender: req.session.user._id,
       text: body.message,
     });
-    await message.save();
+    message = await (await message.save()).populate("conversationId").populate("sender", { password: 0 });
 
     // notify users of conversation_id
     conversation.members.forEach((user_id) => {
-      const savedResponse = responseMapper.get(`${conversation_id}_${user_id}`);
+      const savedResponse = responseMapper.get(`${user_id}`);
       if (savedResponse) {
         savedResponse.write("event: newMessage\n");
-        savedResponse.write(`data: ${JSON.stringify(message)}\n\n`);
+        savedResponse.write(`data: ${JSON.stringify({ message })}\n\n`);
       }
     });
 

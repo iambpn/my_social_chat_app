@@ -70,4 +70,4 @@ Content-Type: application/json
 }
 
 ### Server Sent Event Message
-GET http://localhost:3000/api/notify/messages/63bac4781d197b3833adebb7 HTTP/1.1
+GET http://localhost:3000/api/notify/messages HTTP/1.1
