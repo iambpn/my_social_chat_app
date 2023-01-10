@@ -147,7 +147,7 @@ app.get("/api/messages/:conversation_id", RequireAuth, async (req, res) => {
       .skip((query.page ?? 1) * query.take ?? 20)
       .sort({ createdAt: -1 })
       .populate("conversationId")
-      .populate("sender", { password: 0 });
+      .populate("sender", { password: 0, email: 0 });
 
     return res.status(200).json({
       data: messages,
@@ -175,7 +175,7 @@ app.get("/api/conversations", RequireAuth, async (req, res) => {
       .limit(query.take ?? 5)
       .skip((query.page ?? 1) * query.take ?? 5)
       .sort({ createdAt: -1 })
-      .populate("members", { password: 0 });
+      .populate("members", { password: 0, email: 0 });
 
     return res.status(200).json({
       data: conversations,
@@ -253,7 +253,7 @@ app.get("/api/notify/messages", RequireAuth, async (req, res) => {
     }
 
     savedResponse.write("event: statusCheck\n");
-    savedResponse.write(`data: ${JSON.stringify({ status: "success" })}\n\n`);
+    savedResponse.write(`data: ${JSON.stringify({ status: "Connected" })}\n\n`);
   } catch (error) {
     console.log(error);
 
@@ -290,12 +290,18 @@ app.post("/api/message/:conversation_id", RequireAuth, async (req, res) => {
       sender: req.session.user._id,
       text: body.message,
     });
-    message = await (await message.save()).populate("conversationId").populate("sender", { password: 0 });
+    message = await message.save();
+
+    message = await MessageModel.findOne({
+      _id: message._id,
+    })
+      .populate("conversationId")
+      .populate("sender", { password: 0, email: 0 });
 
     // notify users of conversation_id
     conversation.members.forEach((user_id) => {
       const savedResponse = responseMapper.get(`${user_id}`);
-      if (savedResponse) {
+      if (savedResponse && user_id.toString() !== req.session.user._id) {
         savedResponse.write("event: newMessage\n");
         savedResponse.write(`data: ${JSON.stringify({ message })}\n\n`);
       }
@@ -315,6 +321,12 @@ app.post("/api/message/:conversation_id", RequireAuth, async (req, res) => {
       messages,
     });
   }
+});
+
+app.get("/api/sse_users", RequireAuth, (req, res) => {
+  return res.status(200).json({
+    users: Array.from(responseMapper.keys()),
+  });
 });
 
 app.listen(3000, () => {

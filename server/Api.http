@@ -71,3 +71,6 @@ Content-Type: application/json
 
 ### Server Sent Event Message
 GET http://localhost:3000/api/notify/messages HTTP/1.1
+
+### SSE Users
+GET http://localhost:3000/api/sse_users HTTP/1.1

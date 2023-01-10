@@ -3,10 +3,12 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { AxiosInstance } from "../axios/axiosInstance";
 import ErrorText from "../helper/ErrorText";
 import { ConversationsState, MessagesState } from "../store/conversationStore";
+import { notificationSeen, NotificationState } from "../store/notificationStore";
 
 export default function ConversationPanel() {
   const conversations = useRecoilValue(ConversationsState);
   const setMessagesState = useSetRecoilState(MessagesState);
+  const setNotificationState = useSetRecoilState(NotificationState);
   const [error, setError] = useState("");
 
   const handleOpenConversation = async (e, conversation_id) => {
@@ -16,6 +18,7 @@ export default function ConversationPanel() {
         conversation_id: conversation_id,
         messages: res.data.data.reverse(),
       });
+      notificationSeen(setNotificationState, conversation_id);
     } catch (err) {
       console.log(err.toString());
       if (err?.response?.data?.message) {

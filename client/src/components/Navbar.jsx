@@ -3,9 +3,11 @@ import { AiFillMessage } from "react-icons/ai";
 import { useRecoilValue } from "recoil";
 import { AxiosInstance } from "../axios/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import { NotificationState } from "../store/notificationStore";
 
 export default function Navbar() {
   const authInfo = useRecoilValue(AuthInfoState);
+  const notificationState = useRecoilValue(NotificationState);
   const navigate = useNavigate();
 
   const handleLogout = async (e) => {
@@ -29,7 +31,7 @@ export default function Navbar() {
         </div>
         <div className='basis-[10%] flex justify-around'>
           <div className='relative w-fit'>
-            <span data-count='1' id='batch-icon' className='cursor-pointer'>
+            <span data-count={notificationState.messages.length} id='batch-icon' className='cursor-pointer'>
               <AiFillMessage color='white' />
             </span>
           </div>

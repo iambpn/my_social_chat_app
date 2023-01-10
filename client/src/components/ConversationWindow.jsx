@@ -4,10 +4,12 @@ import { AxiosInstance } from "../axios/axiosInstance";
 import ErrorText from "../helper/ErrorText";
 import { AuthInfoState } from "../store/authStore";
 import { MessagesState } from "../store/conversationStore";
+import { notificationSeen, NotificationState } from "../store/notificationStore";
 
 export default function ConversationWindow() {
   const messages = useRecoilValue(MessagesState);
   const setMessagesState = useSetRecoilState(MessagesState);
+  const setNotificationState = useSetRecoilState(NotificationState);
   const authInfo = useRecoilValue(AuthInfoState);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -15,7 +17,7 @@ export default function ConversationWindow() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     try {
-      if (messages && messages.conversation_id) {
+      if (messages && messages.conversation_id && message) {
         await AxiosInstance.post(`/api/message/${messages.conversation_id}`, {
           message: message,
         });
@@ -26,6 +28,7 @@ export default function ConversationWindow() {
           messages: res.data.data.reverse(),
         }));
         setMessage("");
+        notificationSeen(setNotificationState, messages.conversation_id);
       }
     } catch (err) {
       console.log(err.toString());

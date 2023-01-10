@@ -1,33 +1,65 @@
 import { useEffect } from "react";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import ConversationOnline from "../components/ConversationOnline";
 import ConversationPanel from "../components/ConversationPanel";
 import ConversationWindow from "../components/ConversationWindow";
 import Navbar from "../components/Navbar";
+import { MessagesState } from "../store/conversationStore";
+import { NotificationState } from "../store/notificationStore";
 
 export default function Conversation() {
+  const [messageState, setMessageState] = useRecoilState(MessagesState);
+  const setNotificationState = useSetRecoilState(NotificationState);
   useEffect(() => {
-    const event = new EventSource(`${import.meta.env.VITE_API_URL}/api/notify/messages`, {
+    const source = new EventSource(`${import.meta.env.VITE_API_URL}/api/notify/messages`, {
       withCredentials: true,
     });
 
-    event.addEventListener("statusCheck", (event) => {
-      // event named `eventData` will be received here
-      console.log("initialMessage:", event);
-    });
+    source.addEventListener(
+      "statusCheck",
+      (event) => {
+        console.log(JSON.parse(event.data));
+      },
+      false
+    );
 
-    event.addEventListener("newMessage", (event) => {
-      // event named `eventData` will be received here
-      console.log("neMessage:", event);
-    });
+    source.addEventListener(
+      "newMessage",
+      (event) => {
+        const data = JSON.parse(event.data);
+        if (messageState.conversation_id) {
+          setMessageState((value) => ({
+            ...value,
+            messages: [...value.messages, data.message],
+          }));
+        } else {
+          setNotificationState((value) => ({ messages: [...value.messages, { conversation_id: data.message.conversationId._id, content: data.message.text }] }));
+        }
+      },
+      false
+    );
 
-    event.addEventListener("error", (error) => {
-      console.log("Error:", error);
-      console.log("SSE closed due to error.");
-      event.close();
-    });
+    source.addEventListener(
+      "close",
+      (event) => {
+        source.close();
+        console.log("Source Closed.");
+      },
+      false
+    );
+
+    source.addEventListener(
+      "error",
+      (event) => {
+        console.log("Error:", event);
+        source.close();
+        console.log("Source Closed due to Error.");
+      },
+      false
+    );
 
     return () => {
-      event.close();
+      source.close();
     };
   });
   return (
