@@ -25,3 +25,20 @@ export const MessagesState = atom({
     messages: [],
   },
 });
+
+export const FriendsState = atom({
+  key: "conversation_friendsState",
+  default: [],
+  effects: [
+    async ({ setSelf, resetSelf }) => {
+      try {
+        const res = await AxiosInstance.get("api/friends");
+        setSelf(res.data.data);
+      } catch (error) {
+        //display error
+        // console.error(error);
+        resetSelf();
+      }
+    },
+  ],
+});

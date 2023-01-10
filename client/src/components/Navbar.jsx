@@ -39,7 +39,7 @@ export default function Navbar() {
         <div className='basis-[10%] flex justify-around'>
           <div className='group relative text-sm cursor-pointer w-full mx-3'>
             <span className='capitalize text-lg text-white'>{authInfo?.userInfo?.username}</span>
-            <ul className='hidden group-hover:block absolute group-focus:block bg-white w-full px-2 border-blue-500 border hover:bg-blue-200 pb-1'>
+            <ul className='hidden group-hover:block absolute group-focus:block bg-white w-full px-2 border-blue-500 border hover:bg-blue-200 pb-1 z-10'>
               <li onClick={handleLogout}>Logout</li>
             </ul>
           </div>

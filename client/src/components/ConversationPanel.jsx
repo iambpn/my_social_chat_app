@@ -33,11 +33,11 @@ export default function ConversationPanel() {
     <>
       <div>
         {error && <ErrorText error={error} />}
-        <div>
+        <div className='flex mt-2'>
           <input
             type='text'
             className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none border-0  border-solid border-gray-300 border-b-2'
-            placeholder='Search for friends'
+            placeholder='Search for conversation'
           />
         </div>
         <div className='flex flex-col'>

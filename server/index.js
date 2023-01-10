@@ -136,6 +136,32 @@ app.get("/api/user", RequireAuth, (req, res) => {
   });
 });
 
+app.get("/api/friends", RequireAuth, async (req, res) => {
+  try {
+    const query = MessageQuerySchema.parse(req.query);
+    const messages = await UserModel.find({
+      _id: { $ne: req.session.user._id },
+    })
+      .limit(query.take ?? 20)
+      .skip((query.page ?? 1) * query.take ?? 20)
+      .select({ password: 0, email: 0 });
+
+    return res.status(200).json({
+      data: messages,
+    });
+  } catch (error) {
+    console.log(error);
+    let messages = [error?.message];
+    if (error instanceof ZodError) {
+      messages = formatZodError(error);
+    }
+
+    return res.status(400).json({
+      messages: messages,
+    });
+  }
+});
+
 app.get("/api/messages/:conversation_id", RequireAuth, async (req, res) => {
   try {
     const { conversation_id } = MessageParamsSchema.parse(req.params);

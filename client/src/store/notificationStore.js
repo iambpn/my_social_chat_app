@@ -9,14 +9,12 @@ export const NotificationState = atom({
 
 export const notificationSeen = (setter, conversation_id) => {
   setter((value) => {
-    const messages = value.messages
-      .map((message) => {
-        if (message.conversation_id === conversation_id) {
-          return undefined;
-        }
-        return message;
-      })
-      .filter((x) => x);
+    const messages = value.messages.filter((message) => {
+      if (message.conversation_id === conversation_id) {
+        return false;
+      }
+      return true;
+    });
     return {
       messages,
     };
