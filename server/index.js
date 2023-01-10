@@ -41,6 +41,7 @@ app.use(
     },
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URL,
+      touchAfter: 60
     }),
   })
 );
