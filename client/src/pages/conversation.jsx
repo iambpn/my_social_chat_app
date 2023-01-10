@@ -12,7 +12,7 @@ export default function Conversation() {
   const setNotificationState = useSetRecoilState(NotificationState);
   useEffect(() => {
     const source = new EventSource(`${import.meta.env.VITE_API_URL}/api/notify/messages`, {
-      withCredentials: true,
+      withCredentials: import.meta.env.DEV,
     });
 
     source.addEventListener(
