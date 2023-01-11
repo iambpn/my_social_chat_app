@@ -1,6 +1,6 @@
 # Server Sent Event backed web chat application build with `react-js` and `recoil` state manager. 
 
-**Designm, code template and project idea were taken from codedamn projects.** 
+**Design, code template and project idea were taken from codedamn projects.** 
 
 ---
 ## Codedamn Projects - Chat Application
