@@ -22,6 +22,7 @@ export default function RegisterForm() {
         email,
         username,
         password,
+        re_password: rePassword
       });
       navigate("/login");
     } catch (err) {
